@@ -16,16 +16,30 @@ public class BankingSystem {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Banking Management System");
-        frame.setSize(400, 300);
+        frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new GridLayout(4, 1));
+        frame.setLayout(new BorderLayout());
 
+        JLabel titleLabel = new JLabel("Welcome to Banking System", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        frame.add(titleLabel, BorderLayout.NORTH);
+        
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(2, 1, 10, 10));
         JButton registerButton = new JButton("Register");
         JButton loginButton = new JButton("Login");
+        registerButton.setFont(new Font("Arial", Font.BOLD, 16));
+        loginButton.setFont(new Font("Arial", Font.BOLD, 16));
+        buttonPanel.add(registerButton);
+        buttonPanel.add(loginButton);
+        frame.add(buttonPanel, BorderLayout.CENTER);
         
-        frame.add(new JLabel("Welcome to Banking System", SwingConstants.CENTER));
-        frame.add(registerButton);
-        frame.add(loginButton);
+        frame.getContentPane().setBackground(new Color(173, 216, 230));
+        buttonPanel.setBackground(new Color(224, 255, 255));
+        registerButton.setBackground(new Color(60, 179, 113));
+        loginButton.setBackground(new Color(30, 144, 255));
+        registerButton.setForeground(Color.WHITE);
+        loginButton.setForeground(Color.WHITE);
         
         registerButton.addActionListener(e -> showRegisterForm());
         loginButton.addActionListener(e -> showLoginForm());
@@ -35,11 +49,11 @@ public class BankingSystem {
 
     private static void showRegisterForm() {
         JFrame registerFrame = new JFrame("Register");
-        registerFrame.setSize(300, 200);
-        registerFrame.setLayout(new GridLayout(4, 2));
+        registerFrame.setSize(350, 250);
+        registerFrame.setLayout(new GridLayout(4, 2, 10, 10));
 
         JTextField usernameField = new JTextField();
-        JTextField passwordField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
         JButton registerButton = new JButton("Register");
 
         registerFrame.add(new JLabel("Username:"));
@@ -50,7 +64,7 @@ public class BankingSystem {
         
         registerButton.addActionListener(e -> {
             String username = usernameField.getText();
-            String password = passwordField.getText();
+            String password = new String(passwordField.getPassword());
             try (Connection conn = connectDB()) {
                 PreparedStatement stmt = conn.prepareStatement("INSERT INTO users (username, password, balance) VALUES (?, ?, 0)");
                 stmt.setString(1, username);
@@ -68,11 +82,11 @@ public class BankingSystem {
 
     private static void showLoginForm() {
         JFrame loginFrame = new JFrame("Login");
-        loginFrame.setSize(300, 200);
-        loginFrame.setLayout(new GridLayout(3, 2));
+        loginFrame.setSize(350, 250);
+        loginFrame.setLayout(new GridLayout(3, 2, 10, 10));
 
         JTextField usernameField = new JTextField();
-        JTextField passwordField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
         JButton loginButton = new JButton("Login");
 
         loginFrame.add(new JLabel("Username:"));
@@ -83,7 +97,7 @@ public class BankingSystem {
         
         loginButton.addActionListener(e -> {
             String username = usernameField.getText();
-            String password = passwordField.getText();
+            String password = new String(passwordField.getPassword());
             try (Connection conn = connectDB()) {
                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE username = ? AND password = ?");
                 stmt.setString(1, username);
@@ -106,13 +120,17 @@ public class BankingSystem {
 
     private static void showAccountDashboard(String username) {
         JFrame dashboard = new JFrame("Dashboard");
-        dashboard.setSize(300, 200);
-        dashboard.setLayout(new GridLayout(4, 1));
+        dashboard.setSize(350, 300);
+        dashboard.setLayout(new GridLayout(4, 1, 10, 10));
 
         JButton balanceButton = new JButton("Check Balance");
         JButton depositButton = new JButton("Deposit Money");
         JButton withdrawButton = new JButton("Withdraw Money");
-
+        
+        balanceButton.setFont(new Font("Arial", Font.BOLD, 14));
+        depositButton.setFont(new Font("Arial", Font.BOLD, 14));
+        withdrawButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
         dashboard.add(balanceButton);
         dashboard.add(depositButton);
         dashboard.add(withdrawButton);
@@ -134,29 +152,5 @@ public class BankingSystem {
         withdrawButton.addActionListener(e -> updateBalance(username, false));
         
         dashboard.setVisible(true);
-    }
-    
-    private static void updateBalance(String username, boolean isDeposit) {
-        String action = isDeposit ? "Deposit" : "Withdraw";
-        String input = JOptionPane.showInputDialog("Enter amount to " + action);
-        if (input != null) {
-            try (Connection conn = connectDB()) {
-                int amount = Integer.parseInt(input);
-                String sql = isDeposit ? "UPDATE users SET balance = balance + ? WHERE username = ?"
-                                       : "UPDATE users SET balance = balance - ? WHERE username = ? AND balance >= ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setInt(1, amount);
-                stmt.setString(2, username);
-                if (!isDeposit) stmt.setInt(3, amount);
-                int rows = stmt.executeUpdate();
-                if (rows > 0) {
-                    JOptionPane.showMessageDialog(null, action + " successful!");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Insufficient funds!");
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
     }
 }
