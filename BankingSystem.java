@@ -7,7 +7,7 @@ import java.sql.*;
 public class BankingSystem {
     private static Connection connectDB() {
         try {
-            return DriverManager.getConnection("jdbc:mysql://localhost:3306/bank", "root", "password");
+            return DriverManager.getConnection("jdbc:mysql://localhost:3306/bank", "root", "your_mysql_password_here");
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
